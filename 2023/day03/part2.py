@@ -3,15 +3,13 @@ import re
 
 
 def solution(input):
-    grid = np.array([list(line) for line in input])
+    grid = input
     gears = [[[] for _ in row] for row in input]
 
     def getGear(row, l, r) -> None:
         """
         grid[row][l:r] is the word
         """
-        if l == -1 or r == -1:
-            return
         tocheck = []
         for i in range(l - 1, r + 1):
             tocheck.append((row - 1, i))  # top row
@@ -29,8 +27,7 @@ def solution(input):
         return
 
     for i, row in enumerate(grid):
-        left, right = -1, -1
-        for match in re.finditer("[0-9]+", "".join(row)):
+        for match in re.finditer("[0-9]+", row):
             left, right = match.start(), match.end()
             getGear(i, left, right)
     out = 0
