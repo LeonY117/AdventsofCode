@@ -15,8 +15,7 @@ def solution(input):
             continue
         v, k, length = [int(n) for n in line.split(" ")]
         for s, e in curr.keys():
-            l = max(s, k)
-            r = min(e, k + length)
+            l, r = max(s, k), min(e, k + length)
             # only updates if there's overlap interval [l, r]
             if r > l:  # has to be strictly greater
                 # overwrites the default self-mapping
