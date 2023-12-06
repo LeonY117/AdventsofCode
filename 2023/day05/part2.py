@@ -42,4 +42,4 @@ if __name__ == "__main__":
     with open("fin_input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines() if l != "\n"]
 
-    print(solution(lines))  # 7873084
+    print(solution(lines))  # 7873084, for fin's input: 60294664
