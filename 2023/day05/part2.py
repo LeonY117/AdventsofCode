@@ -9,22 +9,23 @@ def solution(input):
 
     for i in range(1, len(input)):
         line = input[i]
+        # for a new phase, swap value to be new keys
         if not line[0].isdecimal():
-            # make the values the new keys
             curr = {v: v for v in curr.values()}
             continue
         v, k, length = [int(n) for n in line.split(" ")]
-        # staged changes:
         add = {}
         remove = []
         for s, e in curr.keys():
+            # [l, r] is the overlapped region
             l, r = max(s, k), min(e, k + length)
-            # only updates if there's overlap interval [l, r]
-            if r > l:  # has to be strictly greater
-                # overwrites the default self-mapping
+            # if there exists a overlap of intervals, stage the following changes:
+            if r > l:
+                # 1) remove original interval
                 remove.append((s, e))
+                # 2) add overlapped interval with its destination values
                 add[(l, r)] = (v + (l - k), v + (r - k))
-                # map non-overlapping region(s) to self
+                # 3) add non-overlapped intervals that map to itself
                 if s < l:
                     add[(s, l)] = (s, l)
                 if r < e:
