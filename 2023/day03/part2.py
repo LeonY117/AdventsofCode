@@ -7,9 +7,7 @@ def solution(input):
     gears = [[[] for _ in row] for row in input]
 
     def getGear(row, l, r) -> None:
-        """
-        grid[row][l:r] is the word
-        """
+        """grid[row][l:r] is the word"""
         tocheck = []
         for i in range(l - 1, r + 1):
             tocheck.append((row - 1, i))  # top row
