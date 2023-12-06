@@ -4,33 +4,42 @@ def solution(input):
     for i in range(0, len(seed), 2):
         s, e = seed[i], seed[i] + seed[i + 1]
         # key: tuple of source (s, e),
-        # value: list of target intervals (l, r), default to itself
-        curr[(s, e)] = [(s, e)]
+        # value: target interval (l, r), default to itself
+        curr[(s, e)] = (s, e)
 
     for i in range(1, len(input)):
         line = input[i]
         if not line[0].isdecimal():
             # make the values the new keys
-            curr = {v: [v] for vs in curr.values() for v in vs}
+            curr = {v: v for v in curr.values()}
             continue
         v, k, length = [int(n) for n in line.split(" ")]
+        # staged changes:
+        add = {}
+        remove = []
         for s, e in curr.keys():
             l, r = max(s, k), min(e, k + length)
             # only updates if there's overlap interval [l, r]
             if r > l:  # has to be strictly greater
                 # overwrites the default self-mapping
-                curr[(s, e)] = [(v + (l - k), v + (r - k))]
+                remove.append((s, e))
+                add[(l, r)] = (v + (l - k), v + (r - k))
                 # map non-overlapping region(s) to self
                 if s < l:
-                    curr[(s, e)].append((s, l))
+                    add[(s, l)] = (s, l)
                 if r < e:
-                    curr[(s, e)].append((r, e))
-    out = min(min(v[0] for v in vs) for vs in curr.values())
+                    add[(r, e)] = (r, e)
+        # make staged changes
+        for key in remove:
+            curr.pop(key)
+        curr.update(add)
+
+    out = min(v[0] for v in curr.values())
     return out
 
 
 if __name__ == "__main__":
-    with open("input.txt", "r") as f:
+    with open("fin_input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines() if l != "\n"]
 
     print(solution(lines))  # 7873084
