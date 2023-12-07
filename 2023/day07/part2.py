@@ -12,6 +12,7 @@ def hand_value(hand):
 
 
 def best_combo_with_joker(hand):
+    """Add the number of jokers to the highest count to make the best combo"""
     cards = Counter(hand)
     if "J" in cards and len(cards) != 1:
         num_Js = cards.pop("J")
