@@ -64,7 +64,7 @@ def part1(input):
         for i in range(2):
             dest = add(connections[i], (x, y))
             # dest = add(invert(connections[(i + 1) % 2]), (x, y))
-            if isWithinBounds(dest, grid):
+            if isWithinBounds(dest, grid) and not isLoop[dest[1]][dest[0]]:
                 return [dest]
         return []
 
@@ -77,10 +77,8 @@ def part1(input):
         else:
             continue
         break
-
     # BFS
     next = []
-    steps = 0
     while stack:
         x, y = stack.pop(0)
         # print(grid[y][x])
@@ -89,39 +87,39 @@ def part1(input):
             next.extend(bfs(x, y))
 
         if not stack:
-            steps += 1
             stack = next.copy()
             next = []
-
     return isLoop
 
 
 def solution(input):
+    loop = part1(input)
     grid = [[cell for cell in line] for line in input]
-    isLoop = [[False for cell in line] for line in input]
-    # isLoop = part1(input)
+    # isLoop = [[False for cell in line] for line in input]
+    print(sum([sum(row) for row in loop]))
 
     dots = set()
-    for i, row in enumerate(grid):
-        for j, cell in enumerate(row):
-            if cell == ".":
+    for j, row in enumerate(grid):
+        for i, cell in enumerate(row):
+            if not loop[j][i]:
                 dots.add((i, j))
 
     def check_contained_and_get_neighbors(x, y):
         neighbors = []
         isContained = True
+        if isOnBound((x, y), grid):
+            isContained = False
         for check_dir in [left, right, up, down]:
             coord = add((x, y), check_dir)
             if not isWithinBounds(coord, grid):
                 continue
-            if isOnBound(coord, grid):
-                isContained = False
             letter = grid[coord[1]][coord[0]]
-            if letter == "." and coord in dots:
+            isLoop = loop[coord[1]][coord[0]]
+            if not isLoop and coord in dots:
                 neighbors.append(coord)
-            elif letter != ".":
+            else:
                 # check if the letter points back at the cell
-                directions = lookup[letter]
+                directions = lookup.get(letter, ((0, 0), (0, 0)))
                 for dir in directions:
                     if invert(dir) == check_dir:
                         isContained = False
@@ -136,6 +134,7 @@ def solution(input):
         dot = to_visit.pop()
         curr_count += 1
         isContained, neighbors = check_contained_and_get_neighbors(*dot)
+        # print(neighbors)
         curr_is_contained = curr_is_contained and isContained
         for n in neighbors:
             to_visit.add(n)
