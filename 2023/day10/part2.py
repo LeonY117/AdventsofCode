@@ -1,5 +1,4 @@
-# some kind of flooding idea? we hold current and propagte a stack until either something reaches the edge,
-# or it runs out of new cells and we get an enclosed area
+from utils.utils import add, invert, isWithinBounds, isOnBound, print_grid
 
 # the mapping from letter to [x, y] <-> [x, y]
 left, right, down, up = (-1, 0), (1, 0), (0, 1), (0, -1)
@@ -10,149 +9,137 @@ lookup = {
     "J": (up, left),
     "7": (left, down),
     "F": (down, right),
-    "S": ((0, 0), (0, 0)),
-    ".": ((0, 0), (0, 0)),
 }
 
 
-def add(coord1, coord2):
-    return (coord1[0] + coord2[0], coord1[1] + coord2[1])
+def getLoop(grid):
+    visited = [[False for _ in line] for line in grid]
 
-
-def invert(coord):
-    return (-coord[0], -coord[1])
-
-
-def isWithinBounds(coord, grid):
-    return 0 <= coord[0] < len(grid[0]) and 0 <= coord[1] < len(grid)
-
-
-def isOnBound(coord, grid):
-    return (
-        coord[0] == 0
-        or coord[0] == len(grid[0]) - 1
-        or coord[1] == 0
-        or coord[1] == len(grid) - 1
-    )
-
-
-def part1(input):
-    grid = [[cell for cell in line] for line in input]
-    isLoop = [[False for _ in line] for line in input]
-
-    def get_start_cell_neighbors(x, y):
+    def get_valid_neighbors(coord):
+        # returns the two valid neighbors that connect to x, y
         out = []
-        for dir in [left, right, down, up]:
-            neighbor = (x + dir[0], y + dir[1])
-            if not isWithinBounds(neighbor, grid):
+        for direction in [left, right, down, up]:
+            # neighbor coordinate is [x, y] + direction
+            nb = add(coord, direction)
+            if not isWithinBounds(nb, grid):
                 continue
-            letter = grid[neighbor[1]][neighbor[0]]
-            connections = lookup[letter]
-            for i in range(2):
-                source = add(connections[i], neighbor)
-                # dest = add(invert(connections[(i + 1) % 2]), neighbor)
-                if source == (x, y):
-                    out.append(neighbor)
+            letter = grid[nb[1]][nb[0]]
+            connections = lookup.get(letter, [(0, 0)])
+            for connection in connections:
+                source = add(connection, nb)
+                # checks to see if the potential neighbor points back at the source
+                if source == coord:
+                    out.append(nb)
         return out
 
-    def bfs(x, y):
+    def find_start():
+        for y, row in enumerate(grid):
+            for x, cell in enumerate(row):
+                if cell == "S":
+                    return (x, y)
+
+    def bfs(coord):
         """
         appends the connected cell to stack if it's not visited,
-        there will always be one redundant check
+        (there will always be one redundant check)
         """
-        connections = lookup[grid[y][x]]
-        for i in range(2):
-            dest = add(connections[i], (x, y))
-            # dest = add(invert(connections[(i + 1) % 2]), (x, y))
-            if isWithinBounds(dest, grid) and not isLoop[dest[1]][dest[0]]:
-                return [dest]
-        return []
+        x, y = coord
+        connections = lookup.get(grid[y][x], [(0, 0)])
+        for connection in connections:
+            cell = add(connection, coord)
+            if isWithinBounds(cell, grid) and not visited[cell[1]][cell[0]]:
+                return cell
+        return None
 
-    for y, row in enumerate(grid):
-        for x, cell in enumerate(row):
-            if cell == "S":
-                stack = get_start_cell_neighbors(x, y)
-                isLoop[y][x] = True
-                break
-        else:
-            continue
-        break
-    # BFS
-    next = []
-    while stack:
-        x, y = stack.pop(0)
-        # print(grid[y][x])
-        if not isLoop[y][x]:
-            isLoop[y][x] = True
-            next.extend(bfs(x, y))
+    def adjust_start(start, neighbors):
+        neighbors = [add(neighbors[0], invert(start)), add(neighbors[1], invert(start))]
+        for letter, directions in lookup.items():
+            if {*neighbors} == {*directions}:
+                grid[start[1]][start[0]] = letter
 
-        if not stack:
-            stack = next.copy()
-            next = []
-    return isLoop
+    start = find_start()
+    neighbors = get_valid_neighbors(start)
+    adjust_start(start, neighbors)
+    curr = neighbors[0]
+    visited[start[1]][start[0]] = True
+
+    # unlike part1, here we just keep 1 item to iterate to next
+    while curr:
+        x, y = curr
+        if not visited[y][x]:
+            curr = bfs((x, y))
+        visited[y][x] = True
+
+    return visited
 
 
 def solution(input):
-    loop = part1(input)
+    """
+    Idea: shoot a ray from any point, and count the number of times it crosses the boundary,
+    if the count is even, it's outside the shape, if it's odd, it's inside the shape
+
+    Edge case (for this input it's actually MOST of the time):
+    If a ray happen to be travelling adjacent and on a border:
+    Case A: we count 1 if the perpendicular tips of the border point in the opposite direction
+    Case B: we count 2 if the perpendicular tips of the border point in the same direction
+    I.e.
+    counts as 2:  F--     counts as 1:  --7
+                  |                       |
+                  |                       |
+                  L--                     L--
+
+                  ^                       ^
+                 ray                     ray
+    """
     grid = [[cell for cell in line] for line in input]
-    # isLoop = [[False for cell in line] for line in input]
-    print(sum([sum(row) for row in loop]))
+    inside = [[False for _ in line] for line in input]
 
-    dots = set()
-    for j, row in enumerate(grid):
-        for i, cell in enumerate(row):
-            if not loop[j][i]:
-                dots.add((i, j))
+    loop = getLoop(grid)
 
-    def check_contained_and_get_neighbors(x, y):
-        neighbors = []
-        isContained = True
-        if isOnBound((x, y), grid):
-            isContained = False
-        for check_dir in [left, right, up, down]:
-            coord = add((x, y), check_dir)
-            if not isWithinBounds(coord, grid):
-                continue
-            letter = grid[coord[1]][coord[0]]
-            isLoop = loop[coord[1]][coord[0]]
-            if not isLoop and coord in dots:
-                neighbors.append(coord)
+    def get_non_loop_and_set_to_dot():
+        # returns all the non-loop cell coordinates and set them to '.' in grid
+        dots = []
+        for j, row in enumerate(grid):
+            for i, cell in enumerate(row):
+                if not loop[j][i]:
+                    dots.append((i, j))
+                    grid[j][i] = "."
+        return dots
+
+    # a set containing all the non-loop cells
+    dots = get_non_loop_and_set_to_dot()
+
+    opposites = {"J": "7", "F": "L", "L": "F", "7": "J"}
+    for dot in dots:
+        x, y = dot
+
+        count = 0
+        start = None
+        # shoot a ray upwards
+        for j in range(0, y):
+            ray = grid[j][x]
+            crossed = False
+            if ray == "-":
+                crossed = True
+            elif ray in ["J", "F", "L", "7"]:
+                # count crossed if start is not set or we have Case B
+                crossed = True if opposites[ray] == start or not start else False
+                # reset start
+                start = ray if not start else None
             else:
-                # check if the letter points back at the cell
-                directions = lookup.get(letter, ((0, 0), (0, 0)))
-                for dir in directions:
-                    if invert(dir) == check_dir:
-                        isContained = False
-        return isContained, neighbors
+                # '.' or "|" are ignored
+                crossed = False
+            count += crossed
+        inside[y][x] = count % 2
+        # grid[y][x] = str(count)
 
-    out = 0
-    curr_count = 0
-    curr_is_contained = True
-    # to_visit should to be a set to avoid duplications
-    to_visit = {dots.pop()}
-    while len(to_visit) != 0:
-        dot = to_visit.pop()
-        curr_count += 1
-        isContained, neighbors = check_contained_and_get_neighbors(*dot)
-        # print(neighbors)
-        curr_is_contained = curr_is_contained and isContained
-        for n in neighbors:
-            to_visit.add(n)
-            dots.discard(n)
+    # show_grid(grid)
 
-        # move a new dot to queue, and tally up counts
-        if not to_visit:
-            print(curr_count, curr_is_contained)
-            out += curr_count * curr_is_contained
-            curr_count, curr_is_contained = 0, True
-            if dots:
-                to_visit.add(dots.pop())
-
-    return out
+    return sum(sum(row) for row in inside)
 
 
 if __name__ == "__main__":
-    with open("test.txt", "r") as f:
+    with open("input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines()]
 
     print(solution(lines))
