@@ -20,3 +20,8 @@ def isOnBound(coord, grid):
         or coord[1] == 0
         or coord[1] == len(grid) - 1
     )
+
+
+def print_grid(grid):
+    [print("".join(row)) for row in grid]
+    return 
