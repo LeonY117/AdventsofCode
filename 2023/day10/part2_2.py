@@ -80,8 +80,8 @@ def solution(input):
 
     Edge case (for this input it's actually MOST of the time):
     If a ray happen to be travelling adjacent and on a border:
-    we count 2 if the perpendicular tips of the border point in the same direction
-    we count 1 if the perpendicular tips of the border point in the opposite direction
+    Case A: we count 1 if the perpendicular tips of the border point in the opposite direction
+    Case B: we count 2 if the perpendicular tips of the border point in the same direction
     I.e.
     counts as 2:  F--     counts as 1:  --7
                   |                       |
@@ -96,13 +96,18 @@ def solution(input):
 
     loop = getLoop(grid)
 
+    def get_non_loop_and_set_to_dot():
+        # returns all the non-loop cell coordinates and set them to '.' in grid
+        dots = []
+        for j, row in enumerate(grid):
+            for i, cell in enumerate(row):
+                if not loop[j][i]:
+                    dots.append((i, j))
+                    grid[j][i] = "."
+        return dots
+
     # a set containing all the non-loop cells
-    dots = set()
-    for j, row in enumerate(grid):
-        for i, cell in enumerate(row):
-            if not loop[j][i]:
-                dots.add((i, j))
-                grid[j][i] = "."
+    dots = get_non_loop_and_set_to_dot()
 
     opposites = {"J": "7", "F": "L", "L": "F", "7": "J"}
     for dot in dots:
@@ -113,18 +118,22 @@ def solution(input):
         # shoot a ray upwards
         for j in range(0, y):
             ray = grid[j][x]
-            crossed = 0
+            crossed = False
             if ray == "-":
-                start = None
-                crossed = 1
+                crossed = True
             elif ray in ["J", "F", "L", "7"]:
-                if opposites[ray] == start or not start:
-                    crossed = 1
+                # count crossed if start is not set or we have Case B
+                crossed = True if opposites[ray] == start or not start else False
                 # reset start
                 start = ray if not start else None
+            else:
+                # '.' or "|" are ignored
+                crossed = False
             count += crossed
         inside[y][x] = count % 2
-        grid[y][x] = str(count)
+        # grid[y][x] = str(count)
+
+    # show_grid(grid)
 
     return sum(sum(row) for row in inside)
 
