@@ -49,7 +49,6 @@ def solution(input):
     # The strings are all very short, so it's possible to run through all permutations for part 1
     out = 0
     for line in input:
-        curr = 0
         record, arrangement = line.split(" ")
         arrangement = [int(n) for n in arrangement.split(",")]
         total_damaged = sum(arrangement)
@@ -60,15 +59,11 @@ def solution(input):
         num_o = num_question - num_d
 
         permutations = permute(num_o, num_d)
-        # print(permutations)
 
         for p in permutations:
             completed_record = insert_permutation(record, p)
-            # print(completed_record)
             if is_valid_arrangement(completed_record, arrangement):
                 out += 1
-                curr += 1
-        # print(record, arrangement, curr)
 
     return out
 
@@ -77,4 +72,4 @@ if __name__ == "__main__":
     with open("input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines()]
 
-    print(solution(lines))
+    print(solution(lines)) # 8419
