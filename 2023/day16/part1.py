@@ -1,4 +1,4 @@
-from typing import Tuple, Union, List
+from typing import Tuple, List
 
 right, up, left, down = (1, 0), (0, -1), (-1, 0), (0, 1)
 directions = [left, right, up, down]
@@ -46,17 +46,17 @@ def solution(input):
 
     while stack:
         ray, coord = stack.pop(0)
-        # print(ray, coord)
         x, y = coord
+        # first check if this state can be visited
+        # we don't visit if it's out of bounds or if it's already been visited
         if ray_terminates(coord, ray, visited_states):
             continue
         visited_states[y][x][ray] = True
         visited[y][x] = True
         cell = grid[y][x]
-        # print(cell)
+        # compute the direction of the next ray(s) and append to the stack
         if cell in ["-", "|"]:
             rays = split_ray(cell, ray)
-            # print(rays)
             for r in rays:
                 stack.append((r, add(coord, r)))
         elif cell in ["/", "\\"]:
