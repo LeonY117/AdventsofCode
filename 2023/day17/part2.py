@@ -14,11 +14,9 @@ def get_neighbors(u, grid):
     valid_ds = [d, d + 1, d - 1]
     if c < 4:
         valid_ds = [d]
-    # elif c > 10:
-    #     valid_ds = [d + 1, d - 1]
+    # the condition c > 10 doesn't need be checked because there's no such state
 
     for nd in valid_ds:
-        # print(valid_ds)
         nd %= 4
         dx, dy = dirs[nd]
         nx, ny = x + dx, y + dy
@@ -26,15 +24,13 @@ def get_neighbors(u, grid):
             continue
         count = 1 if nd != d else c + 1
         ret.append((nx, ny, nd, count))
-        # print(ret)
     return ret
 
 
 def solution(inp):
     grid = [[int(cell) for cell in line] for line in inp]
     Q = heapdict.heapdict()
-    dist = {}
-    prev = {}
+    dist, prev = {}, {}
     end = (len(grid[0]) - 1, len(grid) - 1)
     start = (0, 0)
     # initiate states
@@ -46,21 +42,18 @@ def solution(inp):
                     dist[(x, y, d, c + 1)] = float("inf")
                     prev[(x, y, d, c + 1)] = None
 
+    # only allowed to go right and down from top left
     for d in [2, 3]:
         Q[(*start, d, 1)] = 0
         dist[(*start, d, 1)] = 0
         prev[(*start, d, 1)] = None
 
     while len(Q) > 0:
-        u, u_dist = Q.popitem()
-        if u_dist == float("inf"):
-            print("BEEP BEEP")
-            break
+        u, _ = Q.popitem()
         if (u[0], u[1]) == end and u[3] >= 4:
             print("reached")
             break
         neighbors = get_neighbors(u, grid)
-        # print(u, neighbors)
         for v in neighbors:
             if v in Q:
                 alt = dist[u] + grid[v[1]][v[0]]
@@ -74,7 +67,6 @@ def solution(inp):
     visualized_grid = copy.deepcopy(grid)
     curr = u
     while (curr[0], curr[1]) != start:
-        # print(curr)
         visualized_grid[curr[1]][curr[0]] = arrows[curr[2]]
         out += grid[curr[1]][curr[0]]
         curr = prev[curr]
@@ -89,4 +81,4 @@ if __name__ == "__main__":
     with open("input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines()]
 
-    print(solution(lines))  # 805 too high
+    print(solution(lines))  # 801
