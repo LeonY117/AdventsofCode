@@ -9,6 +9,22 @@ def mult(k, v):
     return (k * v[0], k * v[1])
 
 
+def flood_fill(grid, start):
+    queue = [start]
+
+    while queue:
+        node = queue.pop()
+        grid[node[1]][node[0]] = 1
+        for direction in [(1, 0), (-1, 0), (0, -1), (0, 1)]:
+            n = add(node, direction)
+            if (
+                0 <= n[0] < len(grid[0])
+                and 0 <= n[1] < len(grid)
+                and grid[n[1]][n[0]] == 0
+            ):
+                queue.append(n)
+
+
 def solution(inp):
     directions = {"R": (1, 0), "L": (-1, 0), "U": (0, -1), "D": (0, 1)}
 
@@ -27,17 +43,18 @@ def solution(inp):
 
     grid = [[0 for _ in range(r - l + 1)] for _ in range(b - t + 1)]
 
-    curr = (0, 0)
-    grid[0][0] = 1
-    for d, n in instructions:
+    curr = (-l, -t)
+    grid[-t][-l] = 1
+    for d, n in enumerate(instructions):
         for _ in range(n):
-            # print(curr, )
             curr = add(curr, directions[d])
             grid[curr[1]][curr[0]] = 1
 
+    flood_fill(grid, (100, 100))
     plt.imshow(grid)
     plt.show()
-    # print(len(grid), len(grid[0]))
+
+    return sum([sum(row) for row in grid])
 
 
 if __name__ == "__main__":
