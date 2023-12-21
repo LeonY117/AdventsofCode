@@ -1,9 +1,5 @@
-from typing import List
+from typing import List, Dict
 from collections import OrderedDict
-
-MODULES = OrderedDict()
-
-PULSE_COUNT = {0: 0, 1: 0}
 
 
 class FlipFlop:
@@ -16,17 +12,16 @@ class FlipFlop:
     def receive(self, pulse: int, *args) -> None:
         self.received.append(pulse)
 
-    def send(self) -> bool:
+    def send(self) -> Dict[str, int]:
+        out = {}
         pulse = self.received.pop(0)
         if pulse == 0:
             self.state = int(not self.state)
             for child in self.children:
                 # print(f"{self.name}: {self.state}-> {child}")
-                MODULES[child].receive(self.state, self.name)
-                PULSE_COUNT[self.state] += 1
-            return True
-        else:
-            return False
+                out[child] = self.state
+
+        return out
 
     def __repr__(self) -> str:
         return f"FlipFlop: {self.children}"
@@ -47,13 +42,13 @@ class Conjunction:
     def receive(self, pulse: int, parent: str) -> None:
         self.parents[parent] = pulse
 
-    def send(self) -> bool:
+    def send(self) -> Dict[str, int]:
+        out = {}
         state = int(not all(self.parents.values()))
         for child in self.children:
             # print(f"{self.name}: {state}-> {child}")
-            MODULES[child].receive(state, self.name)
-            PULSE_COUNT[state] += 1
-        return True
+            out[child] = state
+        return out
 
     def __repr__(self) -> str:
         return f"Conjunct: {self.children}"
@@ -71,13 +66,12 @@ class Broadcast:
     def receive(self, pulse, *args):
         self.state = pulse
 
-    def send(self) -> bool:
-        assert self.state != None
+    def send(self) -> Dict[str, int]:
+        out = {}
         for child in self.children:
             # print(f"{self.name}: {self.state}-> {child}")
-            MODULES[child].receive(self.state, self.name)
-            PULSE_COUNT[self.state] += 1
-        return True
+            out[child] = self.state
+        return out
 
     def __repr__(self) -> str:
         return f"Broadcaster: {self.children}"
@@ -91,11 +85,11 @@ class Button:
         self.children = children
         self.name = name
 
-    def send(self):
+    def send(self) -> Dict[str, int]:
+        out = {}
         for child in self.children:
-            MODULES[child].receive(0, self.name)
-            PULSE_COUNT[0] += 1
-        return True
+            out[child] = 0
+        return out
 
     def get_state(self):
         return ""
@@ -115,19 +109,20 @@ class UnknownModule:
         return ""
 
     def send(self):
-        return False
+        return {}
 
 
-def get_machine_state():
+# didn't end up being useful
+def get_machine_state(modules):
     out = ""
-    for mod in MODULES:
-        out += MODULES[mod].get_state()
+    for mod in modules:
+        out += modules[mod].get_state()
 
     return out
 
 
 def solution(inp):
-    global MODULES
+    modules = OrderedDict()
 
     for line in inp:
         module, children = line.split(" -> ")
@@ -145,56 +140,37 @@ def solution(inp):
             module_name = "broadcast"
             module = Broadcast
 
-        MODULES[module_name] = module(children_names, module_name)
+        modules[module_name] = module(children_names, module_name)
 
+    # map children to parents
+    # and add unknown modules (there's actually only one)
     unknown_modules = {}
-    for name, module in MODULES.items():
+    for name, module in modules.items():
         for child in module.children:
-            if child in MODULES and type(MODULES[child]) == Conjunction:
-                MODULES[child].add_parent(name)
-            elif child not in MODULES and child not in unknown_modules:
+            if child in modules and type(modules[child]) == Conjunction:
+                modules[child].add_parent(name)
+            elif child not in modules and child not in unknown_modules:
                 unknown_modules[child] = UnknownModule(child)
 
-    MODULES = {**MODULES, **unknown_modules}
+    modules = {**modules, **unknown_modules}
 
+    # add the button module
     button = Button(["broadcast"], "button")
-    MODULES["button"] = button
+    modules["button"] = button
 
-    state_history = {}
-    curr_state = get_machine_state()
-    for i in range(1000):
+    pulse_count = {0: 0, 1: 0}
+    for _ in range(1000):
         queue = ["button"]
         while queue:
-            module = MODULES[queue.pop(0)]
-            if module.send():
-                queue.extend(module.children)
+            module = modules[queue.pop(0)]
+            # a dictionary of {name: pulse} of outbound signals
+            outbound = module.send()
+            for receiver, pulse in outbound.items():
+                modules[receiver].receive(pulse, module.name)
+                pulse_count[pulse] += 1
+                queue.append(receiver)
 
-        state_history[curr_state] = PULSE_COUNT.copy()
-        PULSE_COUNT[0], PULSE_COUNT[1] = 0, 0
-
-        curr_state = get_machine_state()
-        if curr_state in state_history.keys():
-            print(f"found loop on iteration {i}")
-            break
-    print(len(state_history))
-    # print(state_history.values())
-    TOTAL_ITER = 1000
-    NUM_LOOPS = TOTAL_ITER // len(state_history)
-    LEFTOVER = TOTAL_ITER % len(state_history)
-    # print(state_history)
-    total_highs, total_lows = 0, 0
-    for counts in state_history.values():
-        total_lows += counts[0]
-        total_highs += counts[1]
-
-    total_lows *= NUM_LOOPS
-    total_highs *= NUM_LOOPS
-
-    for counts in list(state_history.values())[:LEFTOVER]:
-        total_lows += counts[0]
-        total_highs += counts[1]
-    print(total_highs, total_lows)
-    return total_lows * total_highs
+    return pulse_count[0] * pulse_count[1]
 
 
 if __name__ == "__main__":
