@@ -128,9 +128,15 @@ def solution(inp):
         dfs(default_xmas.copy(), parent)
 
     print("found all leaf intervals")
+
     # for xmas in all_xmas:
     #     print(xmas)
     # two intervals can only be split if one is a subset of another
+
+    # If we let internal volume of theses cubes be V,
+    # Finding V' = 4000^4 - V is actually just a O(n) process
+
+    # but still need a way to find intersect of 4D hypercubes
 
 
 if __name__ == "__main__":
