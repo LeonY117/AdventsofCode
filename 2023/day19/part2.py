@@ -129,8 +129,21 @@ def solution(inp):
 
     print("found all leaf intervals")
 
-    # for xmas in all_xmas:
-    #     print(xmas)
+    final_xmas = {
+        "x": (9999, -9999),
+        "m": (9999, -9999),
+        "a": (9999, -9999),
+        "s": (9999, -9999),
+    }
+    for xmas in all_xmas:
+        for letter, interval in final_xmas.items():
+            low = min(xmas[letter][0], interval[0])
+            high = max(xmas[letter][1], interval[1])
+            final_xmas[letter] = (low, high)
+    
+    for xmas in all_xmas[:10]:
+        print(xmas)
+    print(final_xmas)
     # two intervals can only be split if one is a subset of another
 
     # If we let internal volume of theses cubes be V,
