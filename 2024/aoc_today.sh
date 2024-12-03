@@ -2,7 +2,7 @@
 # stole this magic from Fin: https://github.com/finwarman/advent-of-code-2023/tree/main
 
 # config
-year="2023"
+year="2024"
 
 # place aoc 'session' cookie into '.aoc_session'
 session_file=".aoc_session"
