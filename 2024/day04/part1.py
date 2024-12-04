@@ -14,12 +14,12 @@ def solution(grid):
         return list("".join(l) for l in zip(*grid[::-1]))
 
     total = 0
-    for i in range(4):
+    for i in range(2):
         grid = rot_grid_90(grid)
-        total += sum([len(re.findall("XMAS", line)) for line in grid])
+        total += sum([len(re.findall("(?=XMAS|SAMX)", line)) for line in grid])
 
         diagonal_grid = get_triangular_grid(grid)
-        total += sum([len(re.findall("XMAS", line)) for line in diagonal_grid])
+        total += sum([len(re.findall("(?=XMAS|SAMX)", line)) for line in diagonal_grid])
 
     return total
 

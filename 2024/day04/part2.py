@@ -18,12 +18,12 @@ def solution(grid):
 
     grid_coords = [[(i, j) for j in range(len(grid))] for i in range(len(grid))]
     hashmap = {c: 0 for l in grid_coords for c in l}
-    for i in range(4):
+    for i in range(2):
         diagonal_grid = convert_grid_to_string(get_triangular_grid(grid))
         diagonal_coords = get_triangular_grid(grid_coords)
 
         for line, coords in zip(diagonal_grid, diagonal_coords):
-            matches = re.finditer("MAS", line)
+            matches = re.finditer("(?=MAS|SAM)", line)
             for m in matches:
                 coord = coords[m.start() + 1]
                 hashmap[coord] += 1
