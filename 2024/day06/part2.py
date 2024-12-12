@@ -2,6 +2,17 @@
 def solution(grid):
     grid = [[g for g in row] for row in grid]
     visited = [[0] * len(grid[0]) for _ in grid]
+    # up, right, down, left
+    DIRS = [(-1, 0), (0, 1), (1, 0), (0, -1)]
+    curr_dir_idx = 0
+
+    obstacles = [[0] * len(grid[0]) for _ in grid]
+
+    def move_in_dir(curr, d):
+        return (curr[0] + d[0], curr[1] + d[1])
+
+    def is_out_of_bound(coord):
+        return not (0 <= coord[0] < len(grid) and 0 <= coord[1] < len(grid))
 
     def will_form_loop(curr, dir_idx, o):
         history = [[1] * len(grid[0]) for _ in grid]
@@ -10,44 +21,28 @@ def solution(grid):
         while True:
             history[c[0]][c[1]] *= primes[dir_idx]
             p = c
-            c = move_in_dir(c, dirs[dir_idx])
+            c = move_in_dir(c, DIRS[dir_idx])
             if is_out_of_bound(c):
                 return False
             if history[c[0]][c[1]] % primes[dir_idx] == 0:
                 return True
-            if grid[c[0]][c[1]] == "#" or equal(c, o):
+            if grid[c[0]][c[1]] == "#" or c[0] == o[0] and c[1] == o[1]:
                 c = p
                 dir_idx = (dir_idx + 1) % 4
                 continue
-
-    def move_in_dir(curr, d):
-        return (curr[0] + d[0], curr[1] + d[1])
-
-    def is_out_of_bound(coord):
-        return not (0 <= coord[0] < len(grid) and 0 <= coord[1] < len(grid))
-
-    def equal(c1, c2):
-        return c1[0] == c2[0] and c1[1] == c2[1]
-
-    # up, right, down, left
-    dirs = [(-1, 0), (0, 1), (1, 0), (0, -1)]
-    curr_dir_idx = 0
-
-    obstacles = [[0] * len(grid[0]) for _ in grid]
 
     # Find guard
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             if grid[i][j] == "^":
-                guard = (i, j)
+                curr = (i, j)
                 visited[i][j] = 1
-
-    curr = guard
+                break
 
     while True:
         prev = curr
         next_dir_idx = (curr_dir_idx + 1) % 4
-        curr_dir = dirs[curr_dir_idx]
+        curr_dir = DIRS[curr_dir_idx]
 
         # move one step
         curr = move_in_dir(curr, curr_dir)
