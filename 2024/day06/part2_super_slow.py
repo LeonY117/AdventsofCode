@@ -50,8 +50,7 @@ def solution(grid):
 
 
 if __name__ == "__main__":
-    with open("./2024/day06/input.txt", "r") as f:
-        # with open("test_input.txt", "r") as f:
+    with open("input.txt", "r") as f:
         lines = [l.strip() for l in f.readlines()]
 
     print(solution(lines))  # 1796
