@@ -3,21 +3,12 @@ def solution(inp):
         indices = list(range(curr_idx, curr_idx + count))
         return sum([v * i for i in indices])
 
-    total = 0
     nums = [int(n) for n in inp]
-
-    # pointers
-    l, r = 0, len(nums) - 1
-
-    # values
-    a, b = 0, (len(nums) - 1) // 2
-
     # one pass to get the starting index at every space and file.
     starting_indices = [sum(nums[:i]) for i in range(len(nums))]
 
     # We go from right to left and move every group of numbers to the left.
-
-    total = 0  # every time smth is moved, add to this total.
+    total = 0
     for r in range(len(nums) - 1, 0, -2):
         v = r // 2
         file_moved = False
