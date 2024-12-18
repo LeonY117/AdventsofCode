@@ -1,6 +1,8 @@
+from collections import Counter
+
 def solution(inp):
     curr = [int(n) for n in inp[0].split(" ")]
-    for _ in range(25):
+    for _ in range(7):
         next = []
         for n in curr:
             if n == 0:
@@ -13,7 +15,11 @@ def solution(inp):
                 next.append(n * 2024)
         
         curr = next
-
+    
+    c = Counter(curr)
+    ks = sorted(list(c.keys()))
+    for k in ks:
+        print(k, c[k])
     return len(curr)
 
 if __name__ == "__main__":
