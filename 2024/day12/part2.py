@@ -51,39 +51,60 @@ def solution(grid):
 
         return out
 
-    def traverse_and_count_edges(expanded_grid):
-        def _traverse_one_perimeter(curr, visited_edges, expanded_grid):
-            out = 0
-            prev_dir = None
-            while curr:
-                visited_edges.add(curr)
-                curr, d = find_next_edge(curr, visited_edges, expanded_grid)
-
-                if d is not None and d != prev_dir:
-                    out += 1
-                prev_dir = d
-
-            return out
-
-        visited_edges = set()
+    def count_straight_lines(g):
         total = 0
-        # find first edge
-        for i, row in enumerate(expanded_grid):
-            for j, cell in enumerate(row):
-                if cell == 1 and (i, j) not in visited_edges:
-                    total += _traverse_one_perimeter((i, j), visited_edges, expanded_grid)
+        # count horizontal:
+        for i, row in enumerate(g):
+            length = 0
+            for j, curr in enumerate(row):
+                if curr == 0:
+                    length = 0
+                    continue
+                elif curr == 1:
+                    length += 1
+                if length == 3:
+                    total += 1
+
+                # Reset if at intersection
+                if curr == 1:
+                    # check above and below
+                    above = add_tuples((i, j), (-1, 0))
+                    below = add_tuples((i, j), (1, 0))
+                    if (
+                        not is_out_of_bound(above, g)
+                        and not is_out_of_bound(below, g)
+                        and g[above[0]][above[1]] == 1
+                        and g[below[0]][below[1]] == 1
+                    ):
+                        length = 1
+
+        # count vertical:
+        for j in range(len(g[0])):
+            length = 0
+            for i, _ in enumerate(g):
+                curr = g[i][j]
+                if curr == 0:
+                    length = 0
+                    continue
+                elif curr == 1:
+                    length += 1
+                if length == 3:
+                    total += 1
+
+                # Reset if at interesection
+                if curr == 1:
+                    # check left and right
+                    left = add_tuples((i, j), (0, -1))
+                    right = add_tuples((i, j), (0, 1))
+                    if (
+                        not is_out_of_bound(left, g)
+                        and not is_out_of_bound(right, g)
+                        and g[left[0]][left[1]] == 1
+                        and g[right[0]][right[1]] == 1
+                    ):
+                        length = 1
 
         return total
-
-    def find_next_edge(curr_edge, visited_edges, g):
-        dirs = [(0, -1), (-1, 0), (0, 1), (1, 0)]
-
-        for i, d in enumerate(dirs):
-            n = add_tuples(curr_edge, d)
-            if not is_out_of_bound(n, g) and n not in visited_edges and g[n[0]][n[1]] == 1:
-                return n, i
-
-        return None, None
 
     def bfs(coord):
         expanded_grid = [[0] * (len(grid[0]) * 2 + 1) for _ in range(len(grid) * 2 + 1)]
@@ -102,10 +123,7 @@ def solution(grid):
                 for e in edges:
                     expanded_grid[e[0]][e[1]] = 1
 
-        for r in expanded_grid:
-            print(r)
-        perimeter = traverse_and_count_edges(expanded_grid)
-        print(perimeter)
+        perimeter = count_straight_lines(expanded_grid)
 
         return area, perimeter
 
@@ -121,7 +139,7 @@ def solution(grid):
 
 
 if __name__ == "__main__":
-    with open("test_input.txt", "r") as f:
-        lines = [l.strip() for l in f.readlines()]
+    with open("input.txt", "r") as f:
+        lines = [l.strip() for l in f.readlines()]  # 870333 wrong
 
     print(solution(lines))
