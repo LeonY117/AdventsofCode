@@ -22,7 +22,6 @@ def solution(inp):
         x_target, y_target = int(x_target), int(y_target)
 
         # we are trying to find c1 * (x_a, y_a) + c2 * (x_b, y_b)
-
         c1 = 1
         minimum_cost = 9999999
         while c1 * x_a < x_target and c1 * y_a < y_target and c1 < 100:
@@ -36,9 +35,6 @@ def solution(inp):
             ):
                 c2 = y_remaining // y_b
                 cost = c1 * 3 + c2
-                if c1 == 49 and c2 == 24:
-                    print(machine)
-                # print(out)
                 minimum_cost = min(cost, minimum_cost)
 
             c1 += 1
