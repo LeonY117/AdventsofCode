@@ -1,0 +1,8 @@
+{
+  "terminal.integrated.env.osx": {
+    "CONDA_DEFAULT_ENV": "aoc"
+  },
+  "python.defaultInterpreterPath": "/Users/leon/miniconda3/envs/aoc/bin/python",
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "python.terminal.activateEnvironment": true,
+}
