@@ -51,31 +51,24 @@ def solution(inp):
     pass
 
 if __name__ == "__main__":
-    inp = get_input_for_day($day)
-    # inp = get_file_for_day($day, "test_input")
-    print(solution(inp))
+    lines = get_input_for_day($day)
+    # lines = get_file_for_day($day, "test_input")
+    print(solution(lines))
 
 EOF
 
 FILE1="./day$DD/part1.py"
-if [ -f "$FILE1" ]; then
-    echo "$FILE1 already exists, skipping."
-else
-    echo "Creating '$FILE1' with boilerplate"
-    echo "$boilerplate" > "$FILE1"
-fi
 FILE2="./day$DD/part2.py"
-if [ -f "$FILE2" ]; then
-    echo "$FILE2 already exists, skipping."
-else
-    echo "Creating '$FILE2' with boilerplate"
-    echo "$boilerplate" > "$FILE2"
-fi
+
+echo "Creating '$FILE1' with boilerplate"
+echo "$boilerplate" > "$FILE1"
+echo "Creating '$FILE2' with boilerplate"
+echo "$boilerplate" > "$FILE2"
+touch "./day$DD/__init__.py"
+
+# Set executable permissions.
 chmod +x "$FILE1"
 chmod +x "$FILE2"
-echo "(Set executable permissions)"
-echo ""
-touch "./day$DD/__init__.py"
 
 echo "Opening in VS Code..."
 code "./day$DD/input.txt"
@@ -84,10 +77,9 @@ code "./day$DD/part2.py"
 cd "./day$DD"
 echo ""
 
-number_no_leading=$(echo $DD | sed 's/^0*//')
 echo "Opening today's challenge in browser...."
-echo "https://adventofcode.com/$year/day/$number_no_leading"
-open "https://adventofcode.com/$year/day/$number_no_leading"
+echo "https://adventofcode.com/$year/day/$day"
+open "https://adventofcode.com/$year/day/$day"
 echo ""
 
 echo "Done!"
