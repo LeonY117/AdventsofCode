@@ -1,10 +1,6 @@
 from utils import *
 
 
-def get_factors(num: int):
-    return [n for n in range(1, num + 1) if num % n == 0]
-
-
 def num_is_invalid(num: str):
     for factor in range(1, len(num)):
         # validate if it is a factor:
