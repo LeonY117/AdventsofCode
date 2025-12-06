@@ -45,14 +45,15 @@ echo "Generating Python boilerplate files"
 
 nl=$'\\n'
 read -r -d '' boilerplate <<-EOF
+from utils import *
+
 def solution(inp):
     pass
 
 if __name__ == "__main__":
-    with open("input.txt", "r") as f:
-        lines = [l.strip() for l in f.readlines()]
-    
-    print(solution(lines))
+    inp = get_input_for_day($day)
+    # inp = get_file_for_day($day, "test_input")
+    print(solution(inp))
 
 EOF
 
@@ -74,6 +75,7 @@ chmod +x "$FILE1"
 chmod +x "$FILE2"
 echo "(Set executable permissions)"
 echo ""
+touch "./day$DD/__init__.py"
 
 echo "Opening in VS Code..."
 code "./day$DD/input.txt"
